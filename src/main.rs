@@ -1,9 +1,11 @@
-use std::io::Read;
+use std::fs::OpenOptions;
+use std::io::{Read, Write};
 
 fn main() {
     let user = std::env::var("USER").unwrap();
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/".to_string() + &user);
-    let crates_file = home + "/.cargo/.crates.toml";
+    let stored_crates = format!("{}/{}", home, "exported_crates.txt");
+    let crates_file = format!("{}/{}", home, "/.cargo/.crates.toml");
     let crates = std::fs::File::open(crates_file);
     let crates_list = match crates {
         Ok(mut f) => {
@@ -34,10 +36,16 @@ fn main() {
             final_crates_vec.push(single_crate);
         }
     }
+    let mut options = OpenOptions::new();
+    let mut stored_crates_file = options
+        .create(true)
+        .append(true)
+        .open(stored_crates)
+        .unwrap();
     for bin_crate in final_crates_vec {
         let mut name = bin_crate.0;
         let name_without_quotes = &name.replace("\"", "");
         name = name_without_quotes.split(' ').collect::<Vec<&str>>()[0];
-        println!("{}", name);
+        write!(stored_crates_file, "{}\n", name).unwrap();
     }
 }
