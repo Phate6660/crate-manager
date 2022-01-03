@@ -57,14 +57,15 @@ fn list_cargos_crates(crates_file: &str) -> Vec<String> {
 }
 
 fn install_crates(crates_list: Vec<(String, String)>) {
+    // TODO: Add support for installing specified version.
     for single_crate in crates_list {
-        let command = format!("cargo install {} --vers {}", single_crate.0, single_crate.1);
-        let output = std::process::Command::new("sh")
-            .arg("-c")
-            .arg(command)
-            .output()
+        let child = std::process::Command::new("cargo")
+            .args(&["install", single_crate.0.as_str()])
+            .spawn()
             .expect("failed to execute process");
-        println!("{}", String::from_utf8_lossy(&output.stdout));
+        let output = child.wait_with_output().unwrap().stdout;
+        let usable_output = std::str::from_utf8(&output).unwrap();
+        println!("{}", usable_output);
     }
 }
 
