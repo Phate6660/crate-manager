@@ -7,7 +7,8 @@ fn main() {
     let user = std::env::var("USER").unwrap();
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/".to_string() + &user);
     let cargos_crates_file = format!("{}/{}", home, "/.cargo/.crates.toml");
-    let cargos_crates_vec = crates::list_cargos_crates(&cargos_crates_file);
+    let manager_rules_file = format!("{}/{}", home, "/.cm_rules");
+    let cargos_crates_vec = crates::list_cargos_crates(&cargos_crates_file, &manager_rules_file);
     let stored_crates = format!("{}/{}", home, "exported_crates.txt");
     let na = String::from("N/A");
     let op = args.get(1).or(Some(&na)).unwrap();
@@ -32,7 +33,6 @@ fn main() {
         "install" => {
             if std::path::Path::new(&stored_crates).exists() {
                 let crates_vec = crates::list_crates(&stored_crates);
-                // This is untested, but should work. Will remove this notice when tested.
                 crates::install_crates(crates_vec);
             } else {
                 println!("Crates have not been exported yet. Please use the 'export' command.");

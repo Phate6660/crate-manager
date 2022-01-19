@@ -1,9 +1,13 @@
 # crate-manager
 
-To get started, export your crates with `crate-manager export` (there will be no output).<br>
+To get started, first copy `.cm_rules`\* to your `$HOME`.<br>
+Then export your crates with `crate-manager export` (there will be no output).<br>
 The list of crates will be exported to: `$HOME/exported_crates.txt`.<br>
 Each line consists of at least `name=version`, and if the crate has any<br>
 external deps, they will be listed in the format of `name=version=dep,dep`.
+
+\* This file contains a list of lines formatted as `name=dep,dep`.<br>
+It is used for specifying the external dependencies of crates.
 
 To list the crates you've exported, use `crate-manager list`:
 ```
@@ -43,4 +47,3 @@ To install each crate, use `crate-manager install`.
 - Allow user to install specific crate version
 - Allow user to install missing external deps
   + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?
-- Specify external deps of crates in a file, rather than hardcode (leads to code bloat)
