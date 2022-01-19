@@ -1,7 +1,9 @@
+mod crates;
+use crates::{check_crates, Crate};
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 
-fn list_crates(crates_file: &str) -> Vec<(String, String)> {
+fn list_crates(crates_file: &str) -> Vec<Crate> {
     let mut crates = Vec::new();
     let file = std::fs::File::open(crates_file);
     let crates_file_contents = match file {
@@ -16,15 +18,30 @@ fn list_crates(crates_file: &str) -> Vec<(String, String)> {
         }
     };
     for line in crates_file_contents.lines() {
-        let mut parts = line.split('=');
-        let name = parts.next().unwrap();
-        let version = parts.next().unwrap();
-        crates.push((name.to_string(), version.to_string()));
+        let parts: Vec<&str> = line.split('=').collect();
+        if parts.len() == 2 {
+            let name = parts[0];
+            let version = parts[1];
+            crates.push(Crate {
+                name: name.to_string(),
+                version: version.to_string(),
+                external_deps: vec![],
+            });
+        } else if parts.len() == 3 {
+            let name = parts[0];
+            let version = parts[1];
+            let external_deps = parts[2].split(',').collect::<Vec<&str>>().iter().map(|s| s.to_string()).collect();
+            crates.push(Crate {
+                name: name.to_string(),
+                version: version.to_string(),
+                external_deps: external_deps,
+            });
+        }
     }
     crates
 }
 
-fn list_cargos_crates(crates_file: &str) -> Vec<String> {
+fn list_cargos_crates(crates_file: &str) -> Vec<Crate> {
     let crates = std::fs::File::open(crates_file);
     let crates_list = match crates {
         Ok(mut f) => {
@@ -38,29 +55,46 @@ fn list_cargos_crates(crates_file: &str) -> Vec<String> {
             crates
         }
     };
-    let mut crates_vec: Vec<&str> = Vec::new();
+    let mut crates_vec: Vec<Crate> = Vec::new();
     for (idx, line) in crates_list.lines().enumerate() {
         if idx == 0 {
             continue;
         }
         let parts = line.split('=').collect::<Vec<&str>>();
-        let name_and_version_string = parts[0].trim();
-        crates_vec.push(name_and_version_string);
-    }
-    let mut final_crates_vec: Vec<String> = Vec::new();
-    for single_crate in crates_vec {
-        if single_crate.contains("registry") {
-            final_crates_vec.push(single_crate.to_string());
+        let name_and_version_string = parts[0].trim().replace('"', "");
+        let name_and_version = name_and_version_string.split(' ').collect::<Vec<&str>>();
+        match name_and_version[0] {
+            "pijul" => {
+                crates_vec.push(Crate {
+                    name: name_and_version[0].to_string(),
+                    version: name_and_version[1].to_string(),
+                    external_deps: vec![
+                        "openssl".to_string(),
+                        "libsodium".to_string(),
+                        "libzstd".to_string(),
+                        "xxhash".to_string(),
+                        "pkg-config".to_string(),
+                    ],
+                });
+            },
+            _ => {
+                crates_vec.push(Crate {
+                    name: name_and_version[0].to_string(),
+                    version: name_and_version[1].to_string(),
+                    external_deps: vec![],
+                });
+            },
         }
     }
-    final_crates_vec
+    crates_vec
 }
 
-fn install_crates(crates_list: Vec<(String, String)>) {
+fn install_crates(crates_list: Vec<Crate>) {
+    check_crates(&crates_list, true);
     // TODO: Add support for installing specified version.
     for single_crate in crates_list {
         let child = std::process::Command::new("cargo")
-            .args(&["install", single_crate.0.as_str()])
+            .args(&["install", single_crate.name.to_string().as_str()])
             .spawn()
             .expect("failed to execute process");
         let output = child.wait_with_output().unwrap().stdout;
@@ -87,13 +121,13 @@ fn main() {
                 .open(stored_crates)
                 .unwrap();
             for bin_crate in cargos_crates_vec {
-                let name_without_quotes = bin_crate.replace("\"", "");
-                let name_and_version = [
-                    name_without_quotes.split(' ').collect::<Vec<&str>>()[0],
-                    "=",
-                    name_without_quotes.split(' ').collect::<Vec<&str>>()[1]
-                ].concat();
-                writeln!(stored_crates_file, "{}", name_and_version).unwrap();
+                let line;
+                if !bin_crate.external_deps.is_empty() {
+                    line = format!("{}={}={}", bin_crate.name, bin_crate.version, bin_crate.external_deps.join(","));
+                } else {
+                    line = format!("{}={}", bin_crate.name, bin_crate.version);
+                }
+                writeln!(stored_crates_file, "{}", line).unwrap();
             }
         },
         "install" => {
@@ -106,12 +140,8 @@ fn main() {
             }
         },
         "list" => {
-            for bin_crate in cargos_crates_vec {
-                let mut name = bin_crate;
-                let name_without_quotes = &name.replace("\"", "");
-                name = name_without_quotes.split(' ').collect::<Vec<&str>>()[0].to_string();
-                println!("{}", name);
-            }
+            let crates_vec = list_crates(&stored_crates);
+            check_crates(&crates_vec, false);
         },
         _ => println!("export (to export installed crates to ~/exported_crates.txt)\ninstall (to install exported crates)\nlist (to list installed crates)"),
     }
