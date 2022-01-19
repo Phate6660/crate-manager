@@ -91,7 +91,6 @@ fn list_cargos_crates(crates_file: &str) -> Vec<Crate> {
 
 fn install_crates(crates_list: Vec<Crate>) {
     check_crates(&crates_list, true);
-    // TODO: Add support for installing specified version.
     for single_crate in crates_list {
         let child = std::process::Command::new("cargo")
             .args(&["install", single_crate.name.to_string().as_str()])

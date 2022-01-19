@@ -43,3 +43,4 @@ To install each crate, use `crate-manager install`.
 - Allow user to install specific crate version
 - Allow user to install missing external deps
   + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?
+- Specify external deps of crates in a file, rather than hardcode (leads to code bloat)
