@@ -22,10 +22,10 @@ fn main() {
                 .unwrap();
             for bin_crate in cargos_crates_vec {
                 let line;
-                if !bin_crate.external_deps.is_empty() {
-                    line = format!("{}={}={}", bin_crate.name, bin_crate.version, bin_crate.external_deps.join(","));
-                } else {
+                if bin_crate.external_deps.is_empty() {
                     line = format!("{}={}", bin_crate.name, bin_crate.version);
+                } else {
+                    line = format!("{}={}={}", bin_crate.name, bin_crate.version, bin_crate.external_deps.join(","));
                 }
                 writeln!(stored_crates_file, "{}", line).unwrap();
             }

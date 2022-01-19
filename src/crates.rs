@@ -34,11 +34,11 @@ pub fn list_crates(crates_file: &str) -> Vec<Crate> {
         } else if parts.len() == 3 {
             let name = parts[0];
             let version = parts[1];
-            let external_deps = parts[2].split(',').collect::<Vec<&str>>().iter().map(|s| s.to_string()).collect();
+            let external_deps = parts[2].split(',').collect::<Vec<&str>>().iter().map(std::string::ToString::to_string).collect();
             crates.push(Crate {
                 name: name.to_string(),
                 version: version.to_string(),
-                external_deps: external_deps,
+                external_deps,
             });
         }
     }
@@ -48,43 +48,37 @@ pub fn list_crates(crates_file: &str) -> Vec<Crate> {
 pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
     let crates = std::fs::File::open(crates_file);
     let manager_rules = std::fs::File::open(manager_rules_file);
-    let crates_list = match crates {
-        Ok(mut f) => {
-            let mut contents = String::new();
-            f.read_to_string(&mut contents).unwrap();
-            contents
-        }
-        Err(_) => {
-            let mut crates = String::new();
-            std::io::stdin().read_to_string(&mut crates).unwrap();
-            crates
-        }
+    let crates_list = if let Ok(mut f) = crates {
+        let mut contents = String::new();
+        f.read_to_string(&mut contents).unwrap();
+        contents
+    } else {
+        let mut crates = String::new();
+        std::io::stdin().read_to_string(&mut crates).unwrap();
+        crates
     };
-    let rules: Vec<(String, Vec<String>)> = match manager_rules {
-        Ok(mut f) => {
-            let mut tmp_rules = Vec::new();
-            let mut contents = String::new();
-            f.read_to_string(&mut contents).unwrap();
-            for line in contents.lines() {
-                let parts = line.split('=').collect::<Vec<&str>>();
-                let name = parts[0];
-                let external_deps = parts[1].split(',').collect::<Vec<&str>>().iter().map(|s| s.to_string()).collect();
-                let rule = (name.to_string(), external_deps);
-                tmp_rules.append(&mut vec![rule]);
-            }
-            tmp_rules
-        }
-        Err(_) => {
-            let mut tmp_rules = Vec::new();
-            let mut rules = String::new();
-            std::io::stdin().read_to_string(&mut rules).unwrap();
-            let parts = rules.split('=').collect::<Vec<&str>>();
+    let rules: Vec<(String, Vec<String>)> = if let Ok(mut f) = manager_rules {
+        let mut tmp_rules = Vec::new();
+        let mut contents = String::new();
+        f.read_to_string(&mut contents).unwrap();
+        for line in contents.lines() {
+            let parts = line.split('=').collect::<Vec<&str>>();
             let name = parts[0];
-            let external_deps = parts[1].split(',').collect::<Vec<&str>>().iter().map(|s| s.to_string()).collect();
+            let external_deps = parts[1].split(',').collect::<Vec<&str>>().iter().map(std::string::ToString::to_string).collect();
             let rule = (name.to_string(), external_deps);
             tmp_rules.append(&mut vec![rule]);
-            tmp_rules
         }
+        tmp_rules
+    } else {
+        let mut tmp_rules = Vec::new();
+        let mut rules = String::new();
+        std::io::stdin().read_to_string(&mut rules).unwrap();
+        let parts = rules.split('=').collect::<Vec<&str>>();
+        let name = parts[0];
+        let external_deps = parts[1].split(',').collect::<Vec<&str>>().iter().map(std::string::ToString::to_string).collect();
+        let rule = (name.to_string(), external_deps);
+        tmp_rules.append(&mut vec![rule]);
+        tmp_rules
     };
     let mut crates_vec: Vec<Crate> = Vec::new();
     for (idx, line) in crates_list.lines().enumerate() {
@@ -100,9 +94,9 @@ pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Cr
                 let version = name_and_version[1].to_string();
                 let external_deps = rule.1.clone();
                 crates_vec.push(Crate {
-                    name: name,
-                    version: version,
-                    external_deps: external_deps,
+                    name,
+                    version,
+                    external_deps,
                 });
             } else {
                 crates_vec.push(Crate {
@@ -125,8 +119,8 @@ fn check_crate_deps(single_crate: &Crate) {
     }
 }
 
-pub fn check_crates(crates: &Vec<Crate>, check_deps: bool) {
-    for single_crate in crates.clone() {
+pub fn check_crates(crates: &[Crate], check_deps: bool) {
+    for single_crate in crates.to_owned() {
         if check_deps {
             check_crate_deps(&single_crate);
         } else {
