@@ -1,6 +1,9 @@
 # crate-manager
 
-To get started, export your crates with `crate-manager export` (there will be no output).
+To get started, export your crates with `crate-manager export` (there will be no output).<br>
+The list of crates will be exported to: `$HOME/exported_crates.txt`.<br>
+Each line consists of at least `name=version`, and if the crate has any<br>
+external deps, they will be listed in the format of `name=version=dep,dep`.
 
 To list the crates you've exported, use `crate-manager list`:
 ```
@@ -34,3 +37,9 @@ xcp [0.9.0]
 ```
 
 To install each crate, use `crate-manager install`.
+
+## TODO
+
+- Allow user to install specific crate version
+- Allow user to install missing external deps
+  + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?
