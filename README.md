@@ -42,8 +42,14 @@ xcp [0.9.0]
 
 To install each crate, use `crate-manager install`.
 
+## Usage
+
+- `crate-manager export`: Export installed crates to `$HOME/exported_crates.txt`
+- `crate-manager install`: Install crates from the above file
+- `crate-manager install true`: Same as above but it also installs the specific version
+- `crate-manager list`: Lists the packages tracked in `$HOME/exported_crates.txt`
+
 ## TODO
 
-- Allow user to install specific crate version
 - Allow user to install missing external deps
   + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?

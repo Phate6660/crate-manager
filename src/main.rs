@@ -6,6 +6,8 @@ fn main() {
     let args = std::env::args().collect::<Vec<String>>();
     let user = std::env::var("USER").unwrap();
     let home = std::env::var("HOME").unwrap_or_else(|_| "/home/".to_string() + &user);
+    // `$HOME/.cargo/.crates.toml` must exist!
+    // TODO: Check if `$HOME/.cargo/.crates.toml` exists, and if not create it as an empty file.
     let cargos_crates_file = format!("{}/{}", home, "/.cargo/.crates.toml");
     let manager_rules_file = format!("{}/{}", home, "/.cm_rules");
     let cargos_crates_vec = crates::list_cargos_crates(&cargos_crates_file, &manager_rules_file);
@@ -31,9 +33,14 @@ fn main() {
             }
         },
         "install" => {
+            let get_specific_versions: bool = if args.get(2).is_some() {
+                args.get(2).unwrap().parse::<bool>().unwrap()
+            } else {
+                false
+            };
             if std::path::Path::new(&stored_crates).exists() {
                 let crates_vec = crates::list_crates(&stored_crates);
-                crates::install_crates(crates_vec);
+                crates::install_crates(crates_vec, get_specific_versions);
             } else {
                 println!("Crates have not been exported yet. Please use the 'export' command.");
             }
