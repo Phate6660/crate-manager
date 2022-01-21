@@ -17,9 +17,7 @@ bottom [0.6.6]
 cargo-edit [0.8.0]
 cargo-update [8.1.2]
 cavif [1.3.3]
-coreutils [0.0.8]
 deno [1.17.3]
-dep-organizer [0.1.0]
 exa [0.10.1]
 fd-find [8.3.1]
 flamegraph [0.5.1]
@@ -32,10 +30,8 @@ pijul [1.0.0-beta], which also depends on:
 - libzstd
 - xxhash
 - pkg-config
-pkg-gentoo [0.1.0]
-prj [0.1.0]
+pijul [1.0.0-beta]
 ripgrep [13.0.0]
-rsfetch [0.1.0]
 vivid [0.7.0]
 xcp [0.9.0]
 ```
@@ -53,3 +49,4 @@ To install each crate, use `crate-manager install`.
 
 - Allow user to install missing external deps
   + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?
+- Fix crates with external dependencies being listed twice with `crate-manager list`
