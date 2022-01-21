@@ -27,7 +27,12 @@ fn main() {
                 if bin_crate.external_deps.is_empty() {
                     line = format!("{}={}", bin_crate.name, bin_crate.version);
                 } else {
-                    line = format!("{}={}={}", bin_crate.name, bin_crate.version, bin_crate.external_deps.join(","));
+                    line = format!(
+                        "{}={}={}",
+                        bin_crate.name,
+                        bin_crate.version,
+                        bin_crate.external_deps.join(",")
+                    );
                 }
                 writeln!(stored_crates_file, "{}", line).unwrap();
             }
@@ -49,6 +54,9 @@ fn main() {
             let crates_vec = crates::list_crates(&stored_crates);
             crates::check_crates(&crates_vec, false);
         },
-        _ => println!("export (to export installed crates to ~/exported_crates.txt)\ninstall (to install exported crates)\nlist (to list installed crates)"),
+        _ => println!("export (to export installed crates to ~/exported_crates.txt)\n\
+                       install (to install exported crates)\n\
+                       install true (to install exported crates with specific versions)\n\
+                       list (to list installed crates)"),
     }
 }

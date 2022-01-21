@@ -171,11 +171,15 @@ pub fn install_crates(crates_list: Vec<Crate>, get_specific_versions: bool) {
     for single_crate in crates_list {
         if get_specific_versions {
             // $ cargo install <crate> --vers <version>
-            run(&["install", &single_crate.name, "--vers", &single_crate.version]);
+            run(&[
+                "install",
+                &single_crate.name,
+                "--vers",
+                &single_crate.version,
+            ]);
         } else {
             // $ cargo install <crate>
             run(&["install", &single_crate.name]);
         }
-            
     }
 }
