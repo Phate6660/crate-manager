@@ -3,15 +3,16 @@ use std::fs::OpenOptions;
 use std::io::Write;
 
 fn main() {
-    let args = std::env::args().collect::<Vec<String>>();
+    let args: Vec<String> = std::env::args().collect();
     let user = std::env::var("USER").unwrap();
-    let home = std::env::var("HOME").unwrap_or_else(|_| "/home/".to_string() + &user);
+    let or_home = format!("/home/{user}");
+    let home = std::env::var("HOME").unwrap_or_else(|_| or_home);
     // `$HOME/.cargo/.crates.toml` must exist!
     // TODO: Check if `$HOME/.cargo/.crates.toml` exists, and if not create it as an empty file.
-    let cargos_crates_file = format!("{}/{}", home, "/.cargo/.crates.toml");
-    let manager_rules_file = format!("{}/{}", home, "/.cm_rules");
+    let cargos_crates_file = format!("{home}/.cargo/.crates.toml");
+    let manager_rules_file = format!("{home}/.cm_rules");
     let cargos_crates_vec = crates::list_cargos(&cargos_crates_file, &manager_rules_file);
-    let stored_crates = format!("{}/{}", home, "exported_crates.txt");
+    let stored_crates = format!("{home}/exported_crates.txt");
     let na = String::from("N/A");
     let op = args.get(1).or(Some(&na)).unwrap();
     match op.as_str() {
@@ -23,16 +24,14 @@ fn main() {
                 .open(stored_crates)
                 .unwrap();
             for bin_crate in cargos_crates_vec {
+                let name = bin_crate.name;
+                let version = bin_crate.version;
                 let line;
                 if bin_crate.external_deps.is_empty() {
-                    line = format!("{}={}", bin_crate.name, bin_crate.version);
+                    line = format!("{name}={version}");
                 } else {
-                    line = format!(
-                        "{}={}={}",
-                        bin_crate.name,
-                        bin_crate.version,
-                        bin_crate.external_deps.join(",")
-                    );
+                    let external_deps = bin_crate.external_deps.join(",");
+                    line = format!("{name}={version}={external_deps}");
                 }
                 writeln!(stored_crates_file, "{}", line).unwrap();
             }

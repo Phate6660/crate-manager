@@ -103,6 +103,7 @@ pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
         if idx == 0 {
             continue;
         }
+        // Only add crates that were installed from a registry.
         if !line.contains("registry") {
             continue;
         }
@@ -135,12 +136,11 @@ pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
 /// Returns a bool so that it can be used in a `if` statement.
 fn check_deps(single_crate: &Crate) -> bool {
     if !single_crate.external_deps.is_empty() {
-        println!(
-            "{} [{}], which also depends on:",
-            single_crate.name, single_crate.version
-        );
+        let name = &single_crate.name;
+        let version = &single_crate.version;
+        println!("{name} [{version}], which also depends on:");
         for external_dep in single_crate.external_deps.clone() {
-            println!("- {}", external_dep);
+            println!("- {external_dep}");
         }
         return true;
     }
@@ -152,7 +152,9 @@ pub fn check(crates: &[Crate]) {
         if check_deps(&single_crate) {
             continue;
         }
-        println!("{} [{}]", single_crate.name, single_crate.version);
+        let name = &single_crate.name;
+        let version = &single_crate.version;
+        println!("{name} [{version}]");
     }
 }
 
