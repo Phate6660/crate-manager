@@ -1,6 +1,11 @@
 [package]
 name = "crate-manager"
+authors = ["Phate6660"]
+description = "A crate manager for Rust; that allows you to export, list, and install crates."
+readme = "README.md"
+license-file = "LICENSE"
 version = "0.1.0"
+rust-version = "1.58.1"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
