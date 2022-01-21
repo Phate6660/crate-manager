@@ -30,7 +30,6 @@ pijul [1.0.0-beta], which also depends on:
 - libzstd
 - xxhash
 - pkg-config
-pijul [1.0.0-beta]
 ripgrep [13.0.0]
 vivid [0.7.0]
 xcp [0.9.0]
@@ -49,4 +48,3 @@ To install each crate, use `crate-manager install`.
 
 - Allow user to install missing external deps
   + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?
-- Fix crates with external dependencies being listed twice with `crate-manager list`

@@ -10,7 +10,7 @@ fn main() {
     // TODO: Check if `$HOME/.cargo/.crates.toml` exists, and if not create it as an empty file.
     let cargos_crates_file = format!("{}/{}", home, "/.cargo/.crates.toml");
     let manager_rules_file = format!("{}/{}", home, "/.cm_rules");
-    let cargos_crates_vec = crates::list_cargos_crates(&cargos_crates_file, &manager_rules_file);
+    let cargos_crates_vec = crates::list_cargos(&cargos_crates_file, &manager_rules_file);
     let stored_crates = format!("{}/{}", home, "exported_crates.txt");
     let na = String::from("N/A");
     let op = args.get(1).or(Some(&na)).unwrap();
@@ -44,15 +44,15 @@ fn main() {
                 false
             };
             if std::path::Path::new(&stored_crates).exists() {
-                let crates_vec = crates::list_crates(&stored_crates);
-                crates::install_crates(crates_vec, get_specific_versions);
+                let crates_vec = crates::list_exported(&stored_crates);
+                crates::install(crates_vec, get_specific_versions);
             } else {
                 println!("Crates have not been exported yet. Please use the 'export' command.");
             }
         },
         "list" => {
-            let crates_vec = crates::list_crates(&stored_crates);
-            crates::check_crates(&crates_vec, false);
+            let crates_vec = crates::list_exported(&stored_crates);
+            crates::check(&crates_vec);
         },
         _ => println!("export (to export installed crates to ~/exported_crates.txt)\n\
                        install (to install exported crates)\n\

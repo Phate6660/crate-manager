@@ -8,7 +8,7 @@ pub struct Crate {
 }
 
 /// Reads the list of crates from `$HOME/exported_crates.txt` and returns a vector of `Crate`s.
-pub fn list_crates(crates_file: &str) -> Vec<Crate> {
+pub fn list_exported(crates_file: &str) -> Vec<Crate> {
     let mut crates = Vec::new();
     let file = std::fs::File::open(crates_file);
     let crates_file_contents = match file {
@@ -53,7 +53,7 @@ pub fn list_crates(crates_file: &str) -> Vec<Crate> {
 
 /// Reads Cargo's own list of crates and as well as a file of rules,
 /// and uses them to return a vector of `Crate`s.
-pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
+pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
     let crates = std::fs::File::open(crates_file);
     let manager_rules = std::fs::File::open(manager_rules_file);
     let crates_list = if let Ok(mut f) = crates {
@@ -132,7 +132,8 @@ pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Cr
 }
 
 /// A quick helper function for checking the deps of a crate.
-fn check_crate_deps(single_crate: &Crate) {
+/// Returns a bool so that it can be used in a `if` statement.
+fn check_deps(single_crate: &Crate) -> bool {
     if !single_crate.external_deps.is_empty() {
         println!(
             "{} [{}], which also depends on:",
@@ -141,17 +142,17 @@ fn check_crate_deps(single_crate: &Crate) {
         for external_dep in single_crate.external_deps.clone() {
             println!("- {}", external_dep);
         }
+        return true;
     }
+    false
 }
 
-pub fn check_crates(crates: &[Crate], check_deps: bool) {
+pub fn check(crates: &[Crate]) {
     for single_crate in crates.to_owned() {
-        if check_deps {
-            check_crate_deps(&single_crate);
-        } else {
-            check_crate_deps(&single_crate);
-            println!("{} [{}]", single_crate.name, single_crate.version);
+        if check_deps(&single_crate) {
+            continue;
         }
+        println!("{} [{}]", single_crate.name, single_crate.version);
     }
 }
 
@@ -166,8 +167,8 @@ fn run(args: &[&str]) {
     println!("{}", usable_output);
 }
 
-pub fn install_crates(crates_list: Vec<Crate>, get_specific_versions: bool) {
-    check_crates(&crates_list, true);
+pub fn install(crates_list: Vec<Crate>, get_specific_versions: bool) {
+    check(&crates_list);
     for single_crate in crates_list {
         if get_specific_versions {
             // $ cargo install <crate> --vers <version>
