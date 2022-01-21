@@ -6,7 +6,7 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let user = std::env::var("USER").unwrap();
     let or_home = format!("/home/{user}");
-    let home = std::env::var("HOME").unwrap_or_else(|_| or_home);
+    let home = std::env::var("HOME").unwrap_or(or_home);
     // `$HOME/.cargo/.crates.toml` must exist!
     // TODO: Check if `$HOME/.cargo/.crates.toml` exists, and if not create it as an empty file.
     let cargos_crates_file = format!("{home}/.cargo/.crates.toml");
@@ -26,13 +26,12 @@ fn main() {
             for bin_crate in cargos_crates_vec {
                 let name = bin_crate.name;
                 let version = bin_crate.version;
-                let line;
-                if bin_crate.external_deps.is_empty() {
-                    line = format!("{name}={version}");
+                let line = if bin_crate.external_deps.is_empty() {
+                    format!("{name}={version}")
                 } else {
                     let external_deps = bin_crate.external_deps.join(",");
-                    line = format!("{name}={version}={external_deps}");
-                }
+                    format!("{name}={version}={external_deps}")
+                };
                 writeln!(stored_crates_file, "{}", line).unwrap();
             }
         },

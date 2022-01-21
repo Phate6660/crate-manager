@@ -61,10 +61,14 @@ pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
         f.read_to_string(&mut contents).unwrap();
         contents
     } else {
-        let mut crates = String::new();
-        std::io::stdin().read_to_string(&mut crates).unwrap();
-        crates
+        String::new()
     };
+    if crates_list.is_empty() {
+        println!("Failed to read file because: {}", crates_file);
+        // Exit with an error code.
+        // TODO: Return an error instead.
+        std::process::exit(1);
+    }
     let rules: Vec<(String, Vec<String>)> = if let Ok(mut f) = manager_rules {
         let mut tmp_rules = Vec::new();
         let mut contents = String::new();
@@ -83,20 +87,8 @@ pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
         }
         tmp_rules
     } else {
-        let mut tmp_rules = Vec::new();
-        let mut rules = String::new();
-        std::io::stdin().read_to_string(&mut rules).unwrap();
-        let parts = rules.split('=').collect::<Vec<&str>>();
-        let name = parts[0];
-        let external_deps = parts[1]
-            .split(',')
-            .collect::<Vec<&str>>()
-            .iter()
-            .map(std::string::ToString::to_string)
-            .collect();
-        let rule = (name.to_string(), external_deps);
-        tmp_rules.append(&mut vec![rule]);
-        tmp_rules
+        // Use an empty vector if the rules file is missing.
+        vec![(String::new(), vec![String::new()])]
     };
     let mut crates_vec: Vec<Crate> = Vec::new();
     for (idx, line) in crates_list.lines().enumerate() {
@@ -148,7 +140,7 @@ fn check_deps(single_crate: &Crate) -> bool {
 }
 
 pub fn check(crates: &[Crate]) {
-    for single_crate in crates.to_owned() {
+    for single_crate in crates.iter().cloned() {
         if check_deps(&single_crate) {
             continue;
         }
