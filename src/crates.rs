@@ -7,6 +7,7 @@ pub struct Crate {
     pub external_deps: Vec<String>,
 }
 
+/// Reads the list of crates from `$HOME/exported_crates.txt` and returns a vector of `Crate`s.
 pub fn list_crates(crates_file: &str) -> Vec<Crate> {
     let mut crates = Vec::new();
     let file = std::fs::File::open(crates_file);
@@ -50,6 +51,8 @@ pub fn list_crates(crates_file: &str) -> Vec<Crate> {
     crates
 }
 
+/// Reads Cargo's own list of crates and as well as a file of rules,
+/// and uses them to return a vector of `Crate`s.
 pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
     let crates = std::fs::File::open(crates_file);
     let manager_rules = std::fs::File::open(manager_rules_file);
@@ -100,6 +103,9 @@ pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Cr
         if idx == 0 {
             continue;
         }
+        if !line.contains("registry") {
+            continue;
+        }
         let parts = line.split('=').collect::<Vec<&str>>();
         let name_and_version_string = parts[0].trim().replace('"', "");
         let name_and_version = name_and_version_string.split(' ').collect::<Vec<&str>>();
@@ -125,6 +131,7 @@ pub fn list_cargos_crates(crates_file: &str, manager_rules_file: &str) -> Vec<Cr
     crates_vec
 }
 
+/// A quick helper function for checking the deps of a crate.
 fn check_crate_deps(single_crate: &Crate) {
     if !single_crate.external_deps.is_empty() {
         println!(
@@ -148,21 +155,25 @@ pub fn check_crates(crates: &[Crate], check_deps: bool) {
     }
 }
 
+/// A quick helper function for running a command.
+fn run(args: &[&str]) {
+    let child = std::process::Command::new("cargo")
+        .args(args)
+        .spawn()
+        .expect("failed to execute process");
+    let output = child.wait_with_output().unwrap().stdout;
+    let usable_output = std::str::from_utf8(&output).unwrap();
+    println!("{}", usable_output);
+}
+
 pub fn install_crates(crates_list: Vec<Crate>, get_specific_versions: bool) {
     check_crates(&crates_list, true);
-    fn run(args: &[&str]) {
-        let child = std::process::Command::new("cargo")
-            .args(args)
-            .spawn()
-            .expect("failed to execute process");
-        let output = child.wait_with_output().unwrap().stdout;
-        let usable_output = std::str::from_utf8(&output).unwrap();
-        println!("{}", usable_output);
-    }
     for single_crate in crates_list {
         if get_specific_versions {
+            // $ cargo install <crate> --vers <version>
             run(&["install", &single_crate.name, "--vers", &single_crate.version]);
         } else {
+            // $ cargo install <crate>
             run(&["install", &single_crate.name]);
         }
             
