@@ -7,16 +7,17 @@ fn main() {
     let user = std::env::var("USER").unwrap();
     let or_home = format!("/home/{user}");
     let home = std::env::var("HOME").unwrap_or(or_home);
-    // `$HOME/.cargo/.crates.toml` must exist!
-    // TODO: Check if `$HOME/.cargo/.crates.toml` exists, and if not create it as an empty file.
-    let cargos_crates_file = format!("{home}/.cargo/.crates.toml");
-    let manager_rules_file = format!("{home}/.cm_rules");
-    let cargos_crates_vec = crates::list_cargos(&cargos_crates_file, &manager_rules_file);
     let stored_crates = format!("{home}/exported_crates.txt");
     let na = String::from("N/A");
     let op = args.get(1).or(Some(&na)).unwrap();
     match op.as_str() {
         "export" => {
+            // `$HOME/.cargo/.crates.toml` must exist!
+            // From my testing it's automatically created once you install a crate through cargo.
+            // And you shouldn't be running export anyway without having installed something.
+            let cargos_crates_file = format!("{home}/.cargo/.crates.toml");
+            let manager_rules_file = format!("{home}/.cm_rules");
+            let cargos_crates_vec = crates::list_cargos(&cargos_crates_file, &manager_rules_file);
             let mut options = OpenOptions::new();
             let mut stored_crates_file = options
                 .create(true)
