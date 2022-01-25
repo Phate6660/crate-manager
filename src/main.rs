@@ -37,14 +37,29 @@ fn main() {
             }
         },
         "install" => {
-            let get_specific_versions: bool = if args.get(2).is_some() {
-                args.get(2).unwrap().parse::<bool>().unwrap()
+            // TODO: Parse the command line arguments much better.
+            // This currently relies on specific argument placement and it's not very flexible.
+            // `--exclude pkg,pkg2` is required to be passed first, followed by the bool
+            // for specifying whether to install specific crate versions.
+            let mut excluded_packages: Vec<String> = Vec::new();
+            let mut install_specific_versions = false;
+            if args.get(2).or(Some(&na)).unwrap() == "--exclude" {
+                let excluded_packages_string = args.get(3).or(Some(&na)).unwrap();
+                let mut excluded_packages_vec = Vec::new();
+                for excluded_package in excluded_packages_string.split(",") {
+                    excluded_packages_vec.push(excluded_package.to_string());
+                }
+                excluded_packages = excluded_packages_vec;
             } else {
-                false
-            };
+                if args.get(4).is_some() {
+                    install_specific_versions = args.get(2).unwrap().parse::<bool>().unwrap();
+                } else {
+                    install_specific_versions = false;
+                };
+            }
             if std::path::Path::new(&stored_crates).exists() {
                 let crates_vec = crates::list_exported(&stored_crates);
-                crates::install(crates_vec, get_specific_versions);
+                crates::install(crates_vec, install_specific_versions, excluded_packages);
             } else {
                 println!("Crates have not been exported yet. Please use the 'export' command.");
             }

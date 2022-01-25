@@ -161,10 +161,13 @@ fn run(args: &[&str]) {
     println!("{}", usable_output);
 }
 
-pub fn install(crates_list: Vec<Crate>, get_specific_versions: bool) {
+pub fn install(crates_list: Vec<Crate>, install_specific_versions: bool, excluded_packages: Vec<String>) {
     check(&crates_list);
     for single_crate in crates_list {
-        if get_specific_versions {
+        if excluded_packages.contains(&single_crate.name) {
+            continue;
+        }
+        if install_specific_versions {
             // $ cargo install <crate> --vers <version>
             run(&[
                 "install",

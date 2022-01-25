@@ -41,10 +41,18 @@ To install each crate, use `crate-manager install`.
 
 - `crate-manager export`: Export installed crates to `$HOME/exported_crates.txt`
 - `crate-manager install`: Install crates from the above file
-- `crate-manager install true`: Same as above but it also installs the specific version
+- `crate-manager install --exclude crate,crate2`: Exclude certain crates from being installed
+- `crate-manager install true`: Install specific versions of crates\*
 - `crate-manager list`: Lists the packages tracked in `$HOME/exported_crates.txt`
+
+\* NOTE: If using both exclude and installing specific versions, you must pass the exclusions first.<br>
+I currently hand-parse the given command line arguments and it relies on certain positioning.
 
 ## TODO
 
 - Allow user to install missing external deps
   + Integrate with [`dep-organizer`](https://github.com/Phate6660/dep-organizer)?
+- Better command line argument parsingm, I will either:
+  + Write a library from scratch to handle this
+  + Decide on a good crate besides `clap` or `structopt` to handle the parsing
+    * (Nothing against them, they're just... really bloated. Especially for the basic parsing that I want.)
