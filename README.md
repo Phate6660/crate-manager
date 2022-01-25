@@ -56,3 +56,5 @@ I currently hand-parse the given command line arguments and it relies on certain
   + Write a library from scratch to handle this
   + Decide on a good crate besides `clap` or `structopt` to handle the parsing
     * (Nothing against them, they're just... really bloated. Especially for the basic parsing that I want.)
+- Somehow I done bugged it and `crate-manager` is now double exporting crates
+  + I assume it somehow started with the latest commit adding crate exclusion support
