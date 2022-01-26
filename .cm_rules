@@ -1,1 +1,2 @@
-pijul=openssl,libsodium,libzstd,xxhash,pkg-config
+cavif=nasm
+pijul=libsodium,libzstd,openssl,pkg-config,xxhash

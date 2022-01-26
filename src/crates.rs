@@ -92,6 +92,7 @@ pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
     };
     let mut crates_vec: Vec<Crate> = Vec::new();
     for (idx, line) in crates_list.lines().enumerate() {
+        // Skip the section header.
         if idx == 0 {
             continue;
         }
@@ -102,23 +103,25 @@ pub fn list_cargos(crates_file: &str, manager_rules_file: &str) -> Vec<Crate> {
         let parts = line.split('=').collect::<Vec<&str>>();
         let name_and_version_string = parts[0].trim().replace('"', "");
         let name_and_version = name_and_version_string.split(' ').collect::<Vec<&str>>();
-        for rule in &rules {
-            if rule.0 == name_and_version[0] {
-                let name = name_and_version[0].to_string();
-                let version = name_and_version[1].to_string();
-                let external_deps = rule.1.clone();
-                crates_vec.push(Crate {
-                    name,
-                    version,
-                    external_deps,
-                });
-            } else {
-                crates_vec.push(Crate {
-                    name: name_and_version[0].to_string(),
-                    version: name_and_version[1].to_string(),
-                    external_deps: vec![],
-                });
-            }
+        // If the crate matches a name in the rules file, use the deps specified in the rules file.
+        // Otherwise use as an empty vec (no external deps).
+        if rules.iter().find(|rule| rule.0 == name_and_version[0]).is_some() {
+            let name = name_and_version[0].to_string();
+            let version = name_and_version[1].to_string();
+            let external_deps = rules.iter().find(|r| r.0 == name).unwrap().1.clone();
+            let single_crate = Crate {
+                name,
+                version,
+                external_deps,
+            };
+            crates_vec.push(single_crate);
+        } else {
+            let single_crate = Crate {
+                name: name_and_version[0].to_string(),
+                version: name_and_version[1].to_string(),
+                external_deps: vec![],
+            };
+            crates_vec.push(single_crate);
         }
     }
     crates_vec

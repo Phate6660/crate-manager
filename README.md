@@ -15,21 +15,24 @@ $ crate-manager list
 bat [0.19.0]
 bottom [0.6.6]
 cargo-edit [0.8.0]
+cargo-msrv [0.13.0]
 cargo-update [8.1.2]
-cavif [1.3.3]
+cavif [1.3.3], which also depends on:
+- nasm
 deno [1.17.3]
 exa [0.10.1]
 fd-find [8.3.1]
 flamegraph [0.5.1]
+git-cliff [0.5.0]
 git-delta [0.11.3]
 hyperfine [1.12.0]
 pastel [0.8.1]
 pijul [1.0.0-beta], which also depends on:
-- openssl
 - libsodium
 - libzstd
-- xxhash
+- openssl
 - pkg-config
+- xxhash
 ripgrep [13.0.0]
 vivid [0.7.0]
 xcp [0.9.0]
@@ -56,5 +59,3 @@ I currently hand-parse the given command line arguments and it relies on certain
   + Write a library from scratch to handle this
   + Decide on a good crate besides `clap` or `structopt` to handle the parsing
     * (Nothing against them, they're just... really bloated. Especially for the basic parsing that I want.)
-- Somehow I done bugged it and `crate-manager` is now double exporting crates
-  + I assume it somehow started with the latest commit adding crate exclusion support
